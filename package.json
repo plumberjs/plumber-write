@@ -1,0 +1,29 @@
+{
+  "name": "plumber-write",
+  "version": "0.1.0",
+  "description": "Write to file operation for Plumber pipelines",
+  "main": "index",
+  "dependencies": {
+    "plumber": "~0.1.5",
+    "q": "~0.9.7",
+    "mkdirp": "~0.3.5"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/theefer/plumber-write.git"
+  },
+  "keywords": [
+    "build",
+    "assets",
+    "pipeline",
+    "plumber"
+  ],
+  "author": "Sébastien Cevey <seb@cine7.net>",
+  "license": "GPL",
+  "bugs": {
+    "url": "https://github.com/theefer/plumber-write/issues"
+  }
+}
