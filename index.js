@@ -5,6 +5,7 @@ var stringToPath = require('plumber').stringToPath;
 var q = require('q');
 var fs = require('fs');
 var mkdirpNode = require('mkdirp');
+var flatten = require('flatten');
 
 var mkdirp = q.denodeify(mkdirpNode);
 
@@ -17,6 +18,23 @@ function createReport(resource) {
         type: 'write'
     });
 }
+
+
+function writeData(resource, destPath) {
+    return writeFile(destPath.absolute(), resource.data()).
+        thenResolve(createReport(destPath));
+}
+
+function writeSourceMap(resource, destPath) {
+    if (resource.sourceMap()) {
+        var mapPath = destPath.withFilename(destPath.filename() + '.map');
+        return writeFile(mapPath.absolute(), resource.sourceMap()).
+            thenResolve(createReport(mapPath));
+    } else {
+        return q.resolve([]); // will flatten to nothing
+    }
+}
+
 
 
 // FIXME: don't accept varia-type argument; use separate helpers?
@@ -51,8 +69,11 @@ module.exports = function(destination) {
             }
 
             return mkdirp(destFile.dirname()).then(function() {
-                return writeFile(destFile.absolute(), resource.data()).thenResolve(createReport(destFile));
+                return q.all([
+                    writeData(resource, destFile),
+                    writeSourceMap(resource, destFile)
+                ]);
             });
-        }));
+        })).then(flatten);
     };
 };
