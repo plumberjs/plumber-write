@@ -19,9 +19,20 @@ function createReport(resource) {
     });
 }
 
+function dataWithSourceMapping(resource) {
+    var suffix;
+    if (! resource.sourceMap()) {
+        suffix = '';
+    } else if (resource.type() === 'javascript') {
+        suffix = '//# sourceMappingURL=' + resource.sourceMapFilename();
+    } else {
+        suffix = '/*# sourceMappingURL=' + resource.sourceMapFilename() + ' */';
+    }
+    return resource.data() + suffix;
+}
 
 function writeData(resource, destPath) {
-    return writeFile(destPath.absolute(), resource.data()).
+    return writeFile(destPath.absolute(), dataWithSourceMapping(resource)).
         thenResolve(createReport(destPath));
 }
 
