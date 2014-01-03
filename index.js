@@ -48,30 +48,17 @@ function writeSourceMap(resource, destPath) {
 
 
 
-// FIXME: don't accept varia-type argument; use separate helpers?
 module.exports = function(destination) {
     return function(resources) {
-        var getDest;
+        var destPath = stringToPath(destination);
 
-        if (typeof destination === 'string') {
-            var destPath = stringToPath(destination);
-
-            // Trying to output multiple resources into a single file? That won't do
-            if (resources.length > 1 && ! destPath.isDirectory()) {
-                // FIXME: error now outputted ?
-                return q.reject(new Error('Cannot write multiple resources to a single file: ' + destPath.absolute()));
-            }
-
-            getDest = function() { return destPath; };
-        } else if (typeof destination === 'function') {
-            getDest = function(resource) {
-                return stringToPath(destination(resource));
-            };
+        // Trying to output multiple resources into a single file? That won't do
+        if (resources.length > 1 && ! destPath.isDirectory()) {
+            // FIXME: error now outputted ?
+            return q.reject(new Error('Cannot write multiple resources to a single file: ' + destPath.absolute()));
         }
 
         return q.all(resources.map(function(resource) {
-            var destPath = getDest(resource);
-
             var destFile;
             if (destPath.isDirectory()) {
                 destFile = destPath.withFilename(resource.filename());
