@@ -4,6 +4,7 @@ var stringToPath = require('plumber').stringToPath;
 
 var q = require('q');
 var fs = require('fs');
+var path = require('path');
 var mkdirpNode = require('mkdirp');
 var flatten = require('flatten');
 
@@ -31,6 +32,16 @@ function dataWithSourceMapping(resource) {
     return resource.data() + suffix;
 }
 
+// TODO: extract this, and the 'file' renaming in resource.js, to a
+// SourceMap helper object
+function rebaseSourceMapPaths(sourceMapString, targetDir) {
+    var sourceMap = JSON.parse(sourceMapString);
+    sourceMap.sources = sourceMap.sources.map(function(sourcePath) {
+        return path.relative(targetDir, sourcePath);
+    });
+    return JSON.stringify(sourceMap);
+}
+
 function writeData(resource, destPath) {
     return writeFile(destPath.absolute(), dataWithSourceMapping(resource)).
         thenResolve(createReport(destPath));
@@ -39,7 +50,9 @@ function writeData(resource, destPath) {
 function writeSourceMap(resource, destPath) {
     if (resource.sourceMap()) {
         var mapPath = destPath.withFilename(destPath.filename() + '.map');
-        return writeFile(mapPath.absolute(), resource.sourceMap()).
+        var targetDir = path.dirname(mapPath.absolute());
+        var sourceMap = rebaseSourceMapPaths(resource.sourceMap(), targetDir);
+        return writeFile(mapPath.absolute(), sourceMap).
             thenResolve(createReport(mapPath));
     } else {
         return q.resolve([]); // will flatten to nothing
