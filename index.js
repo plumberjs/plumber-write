@@ -1,6 +1,7 @@
 var Report = require('plumber').Report;
 // FIXME: better helper?
 var stringToPath = require('plumber').stringToPath;
+var mercator = require('mercator');
 
 var q = require('q');
 var fs = require('fs');
@@ -9,7 +10,6 @@ var mkdirpNode = require('mkdirp');
 var flatten = require('flatten');
 
 var mkdirp = q.denodeify(mkdirpNode);
-
 var writeFile = q.denodeify(fs.writeFile);
 
 
@@ -25,21 +25,14 @@ function dataWithSourceMapping(resource) {
     if (! resource.sourceMap()) {
         suffix = '';
     } else if (resource.type() === 'javascript') {
-        suffix = '//# sourceMappingURL=' + resource.sourceMapFilename();
+        suffix = mercator.generateJsSourceMappingComment(resource.sourceMapFilename());
+    } else if (resource.type() === 'css') {
+        suffix = mercator.generateCssSourceMappingComment(resource.sourceMapFilename());
     } else {
-        suffix = '/*# sourceMappingURL=' + resource.sourceMapFilename() + ' */';
+        // No suffix for other types
+        suffix = '';
     }
     return resource.data() + suffix;
-}
-
-// TODO: extract this, and the 'file' renaming in resource.js, to a
-// SourceMap helper object
-function rebaseSourceMapPaths(sourceMapString, targetDir) {
-    var sourceMap = JSON.parse(sourceMapString);
-    sourceMap.sources = sourceMap.sources.map(function(sourcePath) {
-        return path.relative(targetDir, sourcePath);
-    });
-    return JSON.stringify(sourceMap);
 }
 
 function writeData(resource, destPath) {
@@ -48,11 +41,12 @@ function writeData(resource, destPath) {
 }
 
 function writeSourceMap(resource, destPath) {
-    if (resource.sourceMap()) {
+    var sourceMap = resource.sourceMap();
+    if (sourceMap) {
         var mapPath = destPath.withFilename(destPath.filename() + '.map');
         var targetDir = path.dirname(mapPath.absolute());
-        var sourceMap = rebaseSourceMapPaths(resource.sourceMap(), targetDir);
-        return writeFile(mapPath.absolute(), sourceMap).
+        var rebasedSourceMap = sourceMap.rebaseSourcePaths(targetDir);
+        return writeFile(mapPath.absolute(), rebasedSourceMap.toString()).
             thenResolve(createReport(mapPath));
     } else {
         return q.resolve([]); // will flatten to nothing
@@ -67,7 +61,7 @@ module.exports = function(destination) {
 
         // Trying to output multiple resources into a single file? That won't do
         if (resources.length > 1 && ! destPath.isDirectory()) {
-            // FIXME: error now outputted ?
+            // FIXME: error not outputted ?
             return q.reject(new Error('Cannot write multiple resources to a single file: ' + destPath.absolute()));
         }
 
