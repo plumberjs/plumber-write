@@ -13,9 +13,9 @@ var mkdirp = q.denodeify(mkdirpNode);
 var writeFile = q.denodeify(fs.writeFile);
 
 
-function createReport(resource) {
+function createReport(path) {
     return new Report({
-        resource: resource,
+        path: path,
         type: 'write'
     });
 }
