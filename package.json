@@ -4,7 +4,7 @@
   "description": "Write to file operation for Plumber pipelines",
   "main": "index",
   "dependencies": {
-    "plumber": "~0.2.4",
+    "plumber": "~0.2.12",
     "mercator": "~0.1.7",
     "q": "~0.9.7",
     "mkdirp": "~0.3.5",

@@ -20,6 +20,13 @@ function createReport(path) {
     });
 }
 
+function defineGet(obj, method, func) {
+    Object.defineProperty(obj, method, {
+        get: func
+    });
+}
+
+
 function dataWithSourceMapping(resource) {
     var suffix;
     if (! resource.sourceMap()) {
@@ -54,31 +61,69 @@ function writeSourceMap(resource, destPath) {
 }
 
 
+function writeConfig(omitSourceMap, omitMapContent) {
 
-module.exports = function(destination) {
-    return function(resources) {
+    function write(destination) {
         var destPath = stringToPath(destination);
 
-        // Trying to output multiple resources into a single file? That won't do
-        if (resources.length > 1 && ! destPath.isDirectory()) {
-            // FIXME: error not outputted ?
-            return q.reject(new Error('Cannot write multiple resources to a single file: ' + destPath.absolute()));
-        }
+        // FIXME: only accept directory destinations?
 
-        return q.all(resources.map(function(resource) {
-            var destFile;
-            if (destPath.isDirectory()) {
-                destFile = destPath.withFilename(resource.filename());
-            } else {
-                destFile = destPath;
+        function writeOperation(resources) {
+            // Trying to output multiple resources into a single file? That won't do
+            if (resources.length > 1 && ! destPath.isDirectory()) {
+                // FIXME: error not outputted ?
+                return q.reject(new Error('Cannot write multiple resources to a single file: ' + destPath.absolute()));
             }
 
-            return mkdirp(destFile.dirname()).then(function() {
-                return q.all([
-                    writeData(resource, destFile),
-                    writeSourceMap(resource, destFile)
-                ]);
-            });
-        })).then(flatten);
+            return q.all(resources.map(function(resource) {
+                var destFile;
+                if (destPath.isDirectory()) {
+                    destFile = destPath.withFilename(resource.filename());
+                } else {
+                    destFile = destPath;
+                }
+
+                if (omitSourceMap) {
+                    resource = resource.withoutSourceMap();
+                }
+
+                if (omitMapContent) {
+                    var sourceMap = resource.sourceMap();
+                    if (sourceMap) {
+                        resource = resource.withSourceMap(sourceMap.withoutSourcesContent());
+                    }
+                }
+
+                return mkdirp(destFile.dirname()).then(function() {
+                    return q.all([
+                        writeData(resource, destFile),
+                        writeSourceMap(resource, destFile)
+                    ]);
+                });
+            })).then(flatten);
+        };
+
+
+        // Need to do it dynamically to avoid infinite recursion
+        defineGet(writeOperation, 'omitSourceMap', function() {
+            return writeConfig(true, omitMapContent)(destination);
+        });
+        defineGet(writeOperation, 'omitContentFromSourceMap', function() {
+            return writeConfig(omitSourceMap, true)(destination);
+        });
+
+        return writeOperation;
     };
-};
+
+    // Need to do it dynamically to avoid infinite recursion
+    defineGet(write, 'omitSourceMap', function() {
+        return writeConfig(true, omitMapContent);
+    });
+    defineGet(write, 'omitContentFromSourceMap', function() {
+        return writeConfig(omitSourceMap, true);
+    });
+
+    return write;
+}
+
+module.exports = writeConfig(false, false);

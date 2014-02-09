@@ -134,12 +134,13 @@ describe('write', function() {
 
             it('should write the source map', function() {
                 return writeToDir(withMap).then(function() {
-                    var writtenData = readFile('test/sandbox/dist-dir/withMap.js.map');
+                    var writtenMapData = readFile('test/sandbox/dist-dir/withMap.js.map');
 
-                    var sourceMap = SourceMap.fromMapData(withMapMap.toString());
+                    var sourceMap = SourceMap.fromMapData(writtenMapData);
                     sourceMap.version.should.equal(3);
                     sourceMap.file.should.equal('withMap.js');
-                    sourceMap.sources.should.deep.equal(['test/src/withMap.js']);
+                    // paths relative to output dir
+                    sourceMap.sources.should.deep.equal(['../../src/withMap.js']);
                     sourceMap.sourcesContent.should.deep.equal([withMapData]);
                     sourceMap.mappings.should.deep.equal(withMapMap.mappings);
                     sourceMap.names.should.deep.equal(withMapMap.names);
@@ -167,6 +168,86 @@ describe('write', function() {
             var promise = writeToFile(multiple);
             return promise.should.be.rejectedWith('Cannot write multiple resources to a single file: test/sandbox/dist.js');
         });
+    });
 
+
+    describe('#omitSourceMap (as prefix)', function() {
+        var writeToDir;
+
+        beforeEach(function() {
+            var writeNoMap = write.omitSourceMap;
+            writeToDir = writeNoMap('test/sandbox/dist-nomap');
+        });
+
+        it('should not reference a source map', function() {
+            return writeToDir(withMap).then(function() {
+                var writtenData = readFile('test/sandbox/dist-nomap/withMap.js');
+                var sourceMapPath = readSourceMappingComment(writtenData);
+                should.not.exist(sourceMapPath);
+            });
+        });
+
+        it('should not write a source map', function() {
+            return writeToDir(withMap).then(function() {
+                var mapWritten = fs.existsSync('test/sandbox/dist-nomap/withMap.js.map');
+                mapWritten.should.equal(false);
+            });
+        });
+    });
+
+
+    describe('#omitSourceMap (as suffix)', function() {
+        var writeToDir;
+
+        beforeEach(function() {
+            writeToDir = write('test/sandbox/dist-nomap').omitSourceMap;
+        });
+
+        it('should not reference a source map', function() {
+            return writeToDir(withMap).then(function() {
+                var writtenData = readFile('test/sandbox/dist-nomap/withMap.js');
+                var sourceMapPath = readSourceMappingComment(writtenData);
+                should.not.exist(sourceMapPath);
+            });
+        });
+
+        it('should not write a source map', function() {
+            return writeToDir(withMap).then(function() {
+                var mapWritten = fs.existsSync('test/sandbox/dist-nomap/withMap.js.map');
+                mapWritten.should.equal(false);
+            });
+        });
+    });
+
+
+    describe('#omitContentFromSourceMap (as prefix)', function() {
+        var writeToDir;
+
+        beforeEach(function() {
+            var writeNoMap = write.omitContentFromSourceMap;
+            writeToDir = writeNoMap('test/sandbox/dist-nomapcontent');
+        });
+
+        it('should reference a source map', function() {
+            return writeToDir(withMap).then(function() {
+                var writtenData = readFile('test/sandbox/dist-nomapcontent/withMap.js');
+                var sourceMapPath = readSourceMappingComment(writtenData);
+                sourceMapPath.should.equal('withMap.js.map');
+            });
+        });
+
+        it('should not write a source map', function() {
+            return writeToDir(withMap).then(function() {
+                var writtenMapData = readFile('test/sandbox/dist-nomapcontent/withMap.js.map');
+                var sourceMap = SourceMap.fromMapData(writtenMapData.toString());
+                sourceMap.version.should.equal(3);
+                sourceMap.file.should.equal('withMap.js');
+                // paths relative to output dir
+                sourceMap.sources.should.deep.equal(['../../src/withMap.js']);
+                should.not.exist(sourceMap.sourcesContent);
+                sourceMap.mappings.should.deep.equal(withMapMap.mappings);
+                sourceMap.names.should.deep.equal(withMapMap.names);
+            });
+        });
     });
 });
