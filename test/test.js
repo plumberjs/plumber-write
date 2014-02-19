@@ -83,6 +83,7 @@ describe('write', function() {
             it('should return a report', function() {
                 return writeToDir(single).then(function(reports) {
                     reports.length.should.equal(1);
+                    reports[0].resource.should.equal(single[0]);
                     reports[0].path.absolute().should.equal('test/sandbox/dist-dir/single.js');
                     reports[0].type.should.equal('write');
                 });
@@ -113,9 +114,11 @@ describe('write', function() {
             it('should return multiple reports', function() {
                 return writeToDir(multiple).then(function(reports) {
                     reports.length.should.equal(2);
+                    reports[0].resource.should.equal(multiple[0]);
                     reports[0].path.absolute().should.equal('test/sandbox/dist-dir/multi-1.js');
                     reports[0].type.should.equal('write');
 
+                    reports[1].resource.should.equal(multiple[1]);
                     reports[1].path.absolute().should.equal('test/sandbox/dist-dir/multi-2.js');
                     reports[1].type.should.equal('write');
                 });
