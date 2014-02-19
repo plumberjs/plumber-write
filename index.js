@@ -13,8 +13,9 @@ var mkdirp = q.denodeify(mkdirpNode);
 var writeFile = q.denodeify(fs.writeFile);
 
 
-function createReport(path) {
+function createReport(resource, path) {
     return new Report({
+        resource: resource,
         path: path,
         type: 'write'
     });
@@ -44,7 +45,7 @@ function dataWithSourceMapping(resource) {
 
 function writeData(resource, destPath) {
     return writeFile(destPath.absolute(), dataWithSourceMapping(resource)).
-        thenResolve(createReport(destPath));
+        thenResolve(createReport(resource, destPath));
 }
 
 function writeSourceMap(resource, destPath) {
@@ -54,7 +55,7 @@ function writeSourceMap(resource, destPath) {
         var targetDir = path.dirname(mapPath.absolute());
         var rebasedSourceMap = sourceMap.rebaseSourcePaths(targetDir);
         return writeFile(mapPath.absolute(), rebasedSourceMap.toString()).
-            thenResolve(createReport(mapPath));
+            thenResolve(createReport(resource, mapPath));
     } else {
         return q.resolve([]); // will flatten to nothing
     }
