@@ -8,7 +8,6 @@ var highland = require('highland');
 var fs = require('fs');
 var path = require('path');
 var mkdirpNode = require('mkdirp');
-var flatten = require('flatten');
 
 var mkdirp    = highland.wrapCallback(mkdirpNode);
 var writeFile = highland.wrapCallback(fs.writeFile);
