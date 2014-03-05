@@ -1,16 +1,16 @@
 var Report = require('plumber').Report;
+var operation = require('plumber').operation;
 // FIXME: better helper?
 var stringToPath = require('plumber').stringToPath;
 var mercator = require('mercator');
 
-var q = require('q');
+var highland = require('highland');
 var fs = require('fs');
 var path = require('path');
 var mkdirpNode = require('mkdirp');
-var flatten = require('flatten');
 
-var mkdirp = q.denodeify(mkdirpNode);
-var writeFile = q.denodeify(fs.writeFile);
+var mkdirp    = highland.wrapCallback(mkdirpNode);
+var writeFile = highland.wrapCallback(fs.writeFile);
 
 
 function createReport(resource, path) {
@@ -45,7 +45,7 @@ function dataWithSourceMapping(resource) {
 
 function writeData(resource, destPath) {
     return writeFile(destPath.absolute(), dataWithSourceMapping(resource)).
-        thenResolve(createReport(resource, destPath));
+        map(function(){ return createReport(resource, destPath); });
 }
 
 function writeSourceMap(resource, destPath) {
@@ -55,9 +55,9 @@ function writeSourceMap(resource, destPath) {
         var targetDir = path.dirname(mapPath.absolute());
         var rebasedSourceMap = sourceMap.rebaseSourcePaths(targetDir);
         return writeFile(mapPath.absolute(), rebasedSourceMap.toString()).
-            thenResolve(createReport(resource, mapPath));
+            map(function(){ return createReport(resource, mapPath); });
     } else {
-        return q.resolve([]); // will flatten to nothing
+        return highland([]); // will flatten to nothing
     }
 }
 
@@ -66,23 +66,13 @@ function writeConfig(omitSourceMap, omitMapContent) {
 
     function write(destination) {
         var destPath = stringToPath(destination);
+        if (! destPath.isDirectory()) {
+            throw new Error('write operation expects the destination to be a directory');
+        }
 
-        // FIXME: only accept directory destinations?
-
-        function writeOperation(resources) {
-            // Trying to output multiple resources into a single file? That won't do
-            if (resources.length > 1 && ! destPath.isDirectory()) {
-                // FIXME: error not outputted ?
-                return q.reject(new Error('Cannot write multiple resources to a single file: ' + destPath.absolute()));
-            }
-
-            return q.all(resources.map(function(resource) {
-                var destFile;
-                if (destPath.isDirectory()) {
-                    destFile = destPath.withFilename(resource.filename());
-                } else {
-                    destFile = destPath;
-                }
+        var writeOperation = operation(function(resources) {
+            return resources.flatMap(function(resource) {
+                var destFile = destPath.withFilename(resource.filename());
 
                 if (omitSourceMap) {
                     resource = resource.withoutSourceMap();
@@ -95,14 +85,14 @@ function writeConfig(omitSourceMap, omitMapContent) {
                     }
                 }
 
-                return mkdirp(destFile.dirname()).then(function() {
-                    return q.all([
+                return mkdirp(destFile.dirname()).flatMap(function() {
+                    return [
                         writeData(resource, destFile),
                         writeSourceMap(resource, destFile)
-                    ]);
+                    ];
                 });
-            })).then(flatten);
-        };
+            });
+        });
 
 
         // Need to do it dynamically to avoid infinite recursion

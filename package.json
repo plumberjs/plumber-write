@@ -4,17 +4,15 @@
   "description": "Write to file operation for Plumber pipelines",
   "main": "index",
   "dependencies": {
-    "plumber": "~0.2.12",
+    "plumber": "~0.3.0",
     "mercator": "~0.1.7",
-    "q": "~0.9.7",
     "mkdirp": "~0.3.5",
-    "flatten": "0.0.1"
+    "highland": "~1.16.2"
   },
   "devDependencies": {
     "mocha": "~1.16.2",
+    "plumber-util-test": "~0.3.0",
     "chai": "~1.8.1",
-    "mocha-as-promised": "~2.0.0",
-    "chai-as-promised": "~4.1.0",
     "rimraf": "~2.2.6"
   },
   "scripts": {
