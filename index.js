@@ -28,19 +28,23 @@ function defineGet(obj, method, func) {
 }
 
 
+// Return the resource data with the suffix referencing the source
+// map, if any.  Else, return the resource rawData (Buffer).
 function dataWithSourceMapping(resource) {
     var suffix;
-    if (! resource.sourceMap()) {
-        suffix = '';
-    } else if (resource.type() === 'javascript') {
-        suffix = mercator.generateJsSourceMappingComment(resource.sourceMapFilename());
-    } else if (resource.type() === 'css') {
-        suffix = mercator.generateCssSourceMappingComment(resource.sourceMapFilename());
-    } else {
-        // No suffix for other types
-        suffix = '';
+    if (resource.sourceMap()) {
+        if (resource.type() === 'javascript') {
+            suffix = mercator.generateJsSourceMappingComment(resource.sourceMapFilename());
+        } else if (resource.type() === 'css') {
+            suffix = mercator.generateCssSourceMappingComment(resource.sourceMapFilename());
+        }
     }
-    return resource.data() + suffix;
+
+    if (suffix) {
+        return resource.data() + suffix;
+    } else {
+        return resource.rawData();
+    }
 }
 
 function writeData(resource, destPath) {
