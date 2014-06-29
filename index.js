@@ -1,16 +1,16 @@
 var Report = require('plumber').Report;
 var operation = require('plumber').operation;
+var Rx = require('plumber').Rx;
 // FIXME: better helper?
 var stringToPath = require('plumber').stringToPath;
 var mercator = require('mercator');
 
-var highland = require('highland');
 var fs = require('fs');
 var path = require('path');
 var mkdirpNode = require('mkdirp');
 
-var mkdirp    = highland.wrapCallback(mkdirpNode);
-var writeFile = highland.wrapCallback(fs.writeFile);
+var mkdirp    = Rx.Observable.fromNodeCallback(mkdirpNode);
+var writeFile = Rx.Observable.fromNodeCallback(fs.writeFile);
 
 
 function createReport(resource, path) {
@@ -61,7 +61,7 @@ function writeSourceMap(resource, destPath) {
         return writeFile(mapPath.absolute(), rebasedSourceMap.toString()).
             map(function(){ return createReport(resource, mapPath); });
     } else {
-        return highland([]); // will flatten to nothing
+        return Rx.Observable.empty(); // will flatten to nothing
     }
 }
 
@@ -90,10 +90,10 @@ function writeConfig(omitSourceMap, omitMapContent) {
                 }
 
                 return mkdirp(destFile.dirname()).flatMap(function() {
-                    return [
+                    return Rx.Observable.merge(
                         writeData(resource, destFile),
                         writeSourceMap(resource, destFile)
-                    ];
+                    );
                 });
             });
         });
