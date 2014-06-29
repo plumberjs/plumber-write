@@ -1,6 +1,6 @@
 {
   "name": "plumber-write",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "description": "Write to file operation for Plumber pipelines",
   "main": "index",
   "dependencies": {
@@ -12,7 +12,7 @@
   },
   "devDependencies": {
     "mocha": "~1.16.2",
-    "plumber-util-test": "~0.3.0",
+    "plumber-util-test": "~0.4.0",
     "chai": "~1.8.1",
     "rimraf": "~2.2.6"
   },
