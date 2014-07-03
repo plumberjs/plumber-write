@@ -1,17 +1,18 @@
 {
   "name": "plumber-write",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "description": "Write to file operation for Plumber pipelines",
   "main": "index",
   "dependencies": {
-    "plumber": "~0.3.0",
     "mercator": "~0.1.7",
-    "mkdirp": "~0.3.5",
-    "highland": "~1.16.2"
+    "mkdirp": "~0.3.5"
+  },
+  "peerDependencies": {
+    "plumber": "^0.4.0"
   },
   "devDependencies": {
     "mocha": "~1.16.2",
-    "plumber-util-test": "~0.3.0",
+    "plumber-util-test": "~0.4.0",
     "chai": "~1.8.1",
     "rimraf": "~2.2.6"
   },

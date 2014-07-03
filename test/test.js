@@ -12,12 +12,17 @@ var SourceMap = mercator.SourceMap;
 var readSourceMappingComment = mercator.readSourceMappingComment;
 
 var runOperation = require('plumber-util-test').runOperation;
+var completeWithResources = require('plumber-util-test').completeWithResources;
 
 var write = require('..');
 
 
 function readFile(path) {
     return fs.readFileSync(path, 'utf-8');
+}
+
+function resourcesError() {
+  chai.assert(false, "error in resources observable");
 }
 
 
@@ -76,30 +81,27 @@ describe('write', function() {
             });
 
             it('should write the data', function(done) {
-                result.toArray(function() {
+                completeWithResources(result, function() {
                     var writtenData = readFile('test/sandbox/dist-dir/single.js');
                     writtenData.should.equal(singleData);
-                    done();
-                });
+                }, resourcesError, done);
             });
 
             it('should return a report', function(done) {
-                result.toArray(function(reports) {
+                completeWithResources(result, function(reports) {
                     reports.length.should.equal(1);
                     reports[0].writtenResource.should.equal(single[0]);
                     reports[0].path.absolute().should.equal('test/sandbox/dist-dir/single.js');
                     reports[0].type.should.equal('write');
-                    done();
-                });
+                }, resourcesError, done);
             });
 
             it('should reference no source map', function(done) {
-                result.toArray(function() {
+                completeWithResources(result, function() {
                     var writtenData = readFile('test/sandbox/dist-dir/single.js');
                     var sourceMapPath = readSourceMappingComment(writtenData);
                     should.not.exist(sourceMapPath);
-                    done();
-                });
+                }, resourcesError, done);
             });
         });
 
@@ -112,18 +114,17 @@ describe('write', function() {
             });
 
             it('should write the data', function(done) {
-                result.toArray(function() {
+                completeWithResources(result, function() {
                     var writtenData1 = readFile('test/sandbox/dist-dir/multi-1.js');
                     writtenData1.should.equal(multi1Data);
 
                     var writtenData2 = readFile('test/sandbox/dist-dir/multi-2.js');
                     writtenData2.should.equal(multi2Data);
-                    done();
-                });
+                }, resourcesError, done);
             });
 
             it('should return multiple reports', function(done) {
-                result.toArray(function(reports) {
+                completeWithResources(result, function(reports) {
                     reports.length.should.equal(2);
                     reports[0].writtenResource.should.equal(multiple[0]);
                     reports[0].path.absolute().should.equal('test/sandbox/dist-dir/multi-1.js');
@@ -131,8 +132,7 @@ describe('write', function() {
                     reports[1].writtenResource.should.equal(multiple[1]);
                     reports[1].path.absolute().should.equal('test/sandbox/dist-dir/multi-2.js');
                     reports[1].type.should.equal('write');
-                    done();
-                });
+                }, resourcesError, done);
             });
         });
 
@@ -145,16 +145,15 @@ describe('write', function() {
             });
 
             it('should reference the source map', function(done) {
-                result.toArray(function() {
+                completeWithResources(result, function() {
                     var writtenData = readFile('test/sandbox/dist-dir/withMap.js');
                     var sourceMapPath = readSourceMappingComment(writtenData);
                     sourceMapPath.should.equal('withMap.js.map');
-                    done();
-                });
+                }, resourcesError, done);
             });
 
             it('should write the source map', function(done) {
-                result.toArray(function() {
+                completeWithResources(result, function() {
                     var writtenMapData = readFile('test/sandbox/dist-dir/withMap.js.map');
 
                     var sourceMap = SourceMap.fromMapData(writtenMapData);
@@ -165,8 +164,7 @@ describe('write', function() {
                     sourceMap.sourcesContent.should.deep.equal([withMapData]);
                     sourceMap.mappings.should.deep.equal(withMapMap.mappings);
                     sourceMap.names.should.deep.equal(withMapMap.names);
-                    done();
-                });
+                }, resourcesError, done);
             });
         });
     });
@@ -193,20 +191,18 @@ describe('write', function() {
         });
 
         it('should not reference a source map', function(done) {
-            result.toArray(function() {
+            completeWithResources(result, function() {
                 var writtenData = readFile('test/sandbox/dist-nomap/withMap.js');
                 var sourceMapPath = readSourceMappingComment(writtenData);
                 should.not.exist(sourceMapPath);
-                done();
-            });
+            }, resourcesError, done);
         });
 
         it('should not write a source map', function(done) {
-            result.toArray(function() {
+            completeWithResources(result, function() {
                 var mapWritten = fs.existsSync('test/sandbox/dist-nomap/withMap.js.map');
                 mapWritten.should.equal(false);
-                done();
-            });
+            }, resourcesError, done);
         });
     });
 
@@ -221,20 +217,18 @@ describe('write', function() {
         });
 
         it('should not reference a source map', function(done) {
-            result.toArray(function() {
+            completeWithResources(result, function() {
                 var writtenData = readFile('test/sandbox/dist-nomap/withMap.js');
                 var sourceMapPath = readSourceMappingComment(writtenData);
                 should.not.exist(sourceMapPath);
-                done();
-            });
+            }, resourcesError, done);
         });
 
         it('should not write a source map', function(done) {
-            result.toArray(function() {
+            completeWithResources(result, function() {
                 var mapWritten = fs.existsSync('test/sandbox/dist-nomap/withMap.js.map');
                 mapWritten.should.equal(false);
-                done();
-            });
+            }, resourcesError, done);
         });
     });
 
@@ -249,16 +243,15 @@ describe('write', function() {
         });
 
         it('should reference a source map', function(done) {
-            result.toArray(function() {
+            completeWithResources(result, function() {
                 var writtenData = readFile('test/sandbox/dist-nomapcontent/withMap.js');
                 var sourceMapPath = readSourceMappingComment(writtenData);
                 sourceMapPath.should.equal('withMap.js.map');
-                done();
-            });
+            }, resourcesError, done);
         });
 
         it('should not write a source map', function(done) {
-            result.toArray(function() {
+            completeWithResources(result, function() {
                 var writtenMapData = readFile('test/sandbox/dist-nomapcontent/withMap.js.map');
                 var sourceMap = SourceMap.fromMapData(writtenMapData.toString());
                 sourceMap.version.should.equal(3);
@@ -268,8 +261,7 @@ describe('write', function() {
                 should.not.exist(sourceMap.sourcesContent);
                 sourceMap.mappings.should.deep.equal(withMapMap.mappings);
                 sourceMap.names.should.deep.equal(withMapMap.names);
-                done();
-            });
+            }, resourcesError, done);
         });
     });
 });
