@@ -41,7 +41,8 @@ function dataWithSourceMapping(resource) {
     }
 
     if (suffix) {
-        return resource.data() + suffix;
+        // Add the suffix on a new line
+        return resource.data() + (suffix && '\n') + suffix;
     } else {
         return resource.rawData();
     }
