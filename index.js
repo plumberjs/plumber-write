@@ -40,7 +40,8 @@ function dataWithSourceMapping(resource) {
         // No suffix for other types
         suffix = '';
     }
-    return resource.data() + suffix;
+    // Add the suffix on a new line
+    return resource.data() + (suffix && '\n') + suffix;
 }
 
 function writeData(resource, destPath) {
