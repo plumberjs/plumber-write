@@ -1,6 +1,6 @@
 {
   "name": "plumber-write",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "Write to file operation for Plumber pipelines",
   "main": "index",
   "dependencies": {
