@@ -77,7 +77,15 @@ function writeConfig(omitSourceMap, omitMapContent) {
 
         var writeOperation = operation(function(resources) {
             return resources.flatMap(function(resource) {
-                var destFile = destPath.withFilename(resource.filename());
+
+                // WIP: Preserve path
+                // As per: https://github.com/plumberjs/plumber-write/issues/4
+                var Path = require('plumber/lib/model/path');
+                var x = resource.path().absolute().replace(/^.*?\//, '');
+                var destFile = new Path({
+                    dirname: path.join(destPath.dirname(), path.dirname(x)),
+                    filename: path.basename(x)
+                });
 
                 if (omitSourceMap) {
                     resource = resource.withoutSourceMap();
