@@ -4,6 +4,7 @@ var Rx = require('plumber').Rx;
 // FIXME: better helper?
 var stringToPath = require('plumber').stringToPath;
 var mercator = require('mercator');
+var Path = require('plumber/lib/model/path');
 
 var fs = require('fs');
 var path = require('path');
@@ -66,7 +67,6 @@ function writeSourceMap(resource, destPath) {
     }
 }
 
-
 function writeConfig(omitSourceMap, omitMapContent) {
 
     function write(destination) {
@@ -77,7 +77,12 @@ function writeConfig(omitSourceMap, omitMapContent) {
 
         var writeOperation = operation(function(resources) {
             return resources.flatMap(function(resource) {
-                var destFile = destPath.withFilename(resource.filename());
+
+                // Preserve path
+                var destFile = new Path({
+                    dirname: path.join(destPath.dirname(), resource.path().dirname()),
+                    filename: resource.filename()
+                });
 
                 if (omitSourceMap) {
                     resource = resource.withoutSourceMap();
