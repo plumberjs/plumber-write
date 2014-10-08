@@ -4,6 +4,7 @@ var Rx = require('plumber').Rx;
 // FIXME: better helper?
 var stringToPath = require('plumber').stringToPath;
 var mercator = require('mercator');
+var Path = require('plumber/lib/model/path');
 
 var fs = require('fs');
 var path = require('path');
@@ -66,6 +67,9 @@ function writeSourceMap(resource, destPath) {
     }
 }
 
+function rebase(path) {
+    return path.split('/').slice(1).join('/');
+}
 
 function writeConfig(omitSourceMap, omitMapContent) {
 
@@ -78,12 +82,9 @@ function writeConfig(omitSourceMap, omitMapContent) {
         var writeOperation = operation(function(resources) {
             return resources.flatMap(function(resource) {
 
-                // WIP: Preserve path
-                // As per: https://github.com/plumberjs/plumber-write/issues/4
-                var Path = require('plumber/lib/model/path');
-                var x = resource.path().absolute().replace(/^.*?\//, '');
+                // Preserve path
                 var destFile = new Path({
-                    dirname: path.join(destPath.dirname(), path.dirname(x)),
+                    dirname: path.join(destPath.dirname(), rebase(resource.path().dirname())),
                     filename: resource.filename()
                 });
 
