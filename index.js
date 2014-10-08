@@ -67,10 +67,6 @@ function writeSourceMap(resource, destPath) {
     }
 }
 
-function rebase(path) {
-    return path.split('/').slice(1).join('/');
-}
-
 function writeConfig(omitSourceMap, omitMapContent) {
 
     function write(destination) {
@@ -84,7 +80,7 @@ function writeConfig(omitSourceMap, omitMapContent) {
 
                 // Preserve path
                 var destFile = new Path({
-                    dirname: path.join(destPath.dirname(), rebase(resource.path().dirname())),
+                    dirname: path.join(destPath.dirname(), resource.path().dirname()),
                     filename: resource.filename()
                 });
 

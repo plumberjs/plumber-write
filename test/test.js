@@ -82,7 +82,7 @@ describe('write', function() {
 
             it('should write the data', function(done) {
                 completeWithResources(result, function() {
-                    var writtenData = readFile('test/sandbox/dist-dir/src/single.js');
+                    var writtenData = readFile('test/sandbox/dist-dir/test/src/single.js');
                     writtenData.should.equal(singleData);
                 }, resourcesError, done);
             });
@@ -91,14 +91,14 @@ describe('write', function() {
                 completeWithResources(result, function(reports) {
                     reports.length.should.equal(1);
                     reports[0].writtenResource.should.equal(single[0]);
-                    reports[0].path.absolute().should.equal('test/sandbox/dist-dir/src/single.js');
+                    reports[0].path.absolute().should.equal('test/sandbox/dist-dir/test/src/single.js');
                     reports[0].type.should.equal('write');
                 }, resourcesError, done);
             });
 
             it('should reference no source map', function(done) {
                 completeWithResources(result, function() {
-                    var writtenData = readFile('test/sandbox/dist-dir/src/single.js');
+                    var writtenData = readFile('test/sandbox/dist-dir/test/src/single.js');
                     var sourceMapPath = readSourceMappingComment(writtenData);
                     should.not.exist(sourceMapPath);
                 }, resourcesError, done);
@@ -115,10 +115,10 @@ describe('write', function() {
 
             it('should write the data', function(done) {
                 completeWithResources(result, function() {
-                    var writtenData1 = readFile('test/sandbox/dist-dir/src/multi-1.js');
+                    var writtenData1 = readFile('test/sandbox/dist-dir/test/src/multi-1.js');
                     writtenData1.should.equal(multi1Data);
 
-                    var writtenData2 = readFile('test/sandbox/dist-dir/src/multi-2.js');
+                    var writtenData2 = readFile('test/sandbox/dist-dir/test/src/multi-2.js');
                     writtenData2.should.equal(multi2Data);
                 }, resourcesError, done);
             });
@@ -127,10 +127,10 @@ describe('write', function() {
                 completeWithResources(result, function(reports) {
                     reports.length.should.equal(2);
                     reports[0].writtenResource.should.equal(multiple[0]);
-                    reports[0].path.absolute().should.equal('test/sandbox/dist-dir/src/multi-1.js');
+                    reports[0].path.absolute().should.equal('test/sandbox/dist-dir/test/src/multi-1.js');
                     reports[0].type.should.equal('write');
                     reports[1].writtenResource.should.equal(multiple[1]);
-                    reports[1].path.absolute().should.equal('test/sandbox/dist-dir/src/multi-2.js');
+                    reports[1].path.absolute().should.equal('test/sandbox/dist-dir/test/src/multi-2.js');
                     reports[1].type.should.equal('write');
                 }, resourcesError, done);
             });
@@ -146,7 +146,7 @@ describe('write', function() {
 
             it('should reference the source map', function(done) {
                 completeWithResources(result, function() {
-                    var writtenData = readFile('test/sandbox/dist-dir/src/withMap.js');
+                    var writtenData = readFile('test/sandbox/dist-dir/test/src/withMap.js');
                     var sourceMapPath = readSourceMappingComment(writtenData);
                     sourceMapPath.should.equal('withMap.js.map');
                 }, resourcesError, done);
@@ -154,13 +154,13 @@ describe('write', function() {
 
             it('should write the source map', function(done) {
                 completeWithResources(result, function() {
-                    var writtenMapData = readFile('test/sandbox/dist-dir/src/withMap.js.map');
+                    var writtenMapData = readFile('test/sandbox/dist-dir/test/src/withMap.js.map');
 
                     var sourceMap = SourceMap.fromMapData(writtenMapData);
                     sourceMap.version.should.equal(3);
                     sourceMap.file.should.equal('withMap.js');
                     // paths relative to output dir
-                    sourceMap.sources.should.deep.equal(['../../../src/withMap.js']);
+                    sourceMap.sources.should.deep.equal(['../../../../src/withMap.js']);
                     sourceMap.sourcesContent.should.deep.equal([withMapData]);
                     sourceMap.mappings.should.deep.equal(withMapMap.mappings);
                     sourceMap.names.should.deep.equal(withMapMap.names);
@@ -192,7 +192,7 @@ describe('write', function() {
 
         it('should not reference a source map', function(done) {
             completeWithResources(result, function() {
-                var writtenData = readFile('test/sandbox/dist-nomap/src/withMap.js');
+                var writtenData = readFile('test/sandbox/dist-nomap/test/src/withMap.js');
                 var sourceMapPath = readSourceMappingComment(writtenData);
                 should.not.exist(sourceMapPath);
             }, resourcesError, done);
@@ -200,7 +200,7 @@ describe('write', function() {
 
         it('should not write a source map', function(done) {
             completeWithResources(result, function() {
-                var mapWritten = fs.existsSync('test/sandbox/dist-nomap/src/withMap.js.map');
+                var mapWritten = fs.existsSync('test/sandbox/dist-nomap/test/src/withMap.js.map');
                 mapWritten.should.equal(false);
             }, resourcesError, done);
         });
@@ -218,7 +218,7 @@ describe('write', function() {
 
         it('should not reference a source map', function(done) {
             completeWithResources(result, function() {
-                var writtenData = readFile('test/sandbox/dist-nomap/src/withMap.js');
+                var writtenData = readFile('test/sandbox/dist-nomap/test/src/withMap.js');
                 var sourceMapPath = readSourceMappingComment(writtenData);
                 should.not.exist(sourceMapPath);
             }, resourcesError, done);
@@ -226,7 +226,7 @@ describe('write', function() {
 
         it('should not write a source map', function(done) {
             completeWithResources(result, function() {
-                var mapWritten = fs.existsSync('test/sandbox/dist-nomap/src/withMap.js.map');
+                var mapWritten = fs.existsSync('test/sandbox/dist-nomap/test/src/withMap.js.map');
                 mapWritten.should.equal(false);
             }, resourcesError, done);
         });
@@ -244,7 +244,7 @@ describe('write', function() {
 
         it('should reference a source map', function(done) {
             completeWithResources(result, function() {
-                var writtenData = readFile('test/sandbox/dist-nomapcontent/src/withMap.js');
+                var writtenData = readFile('test/sandbox/dist-nomapcontent/test/src/withMap.js');
                 var sourceMapPath = readSourceMappingComment(writtenData);
                 sourceMapPath.should.equal('withMap.js.map');
             }, resourcesError, done);
@@ -252,12 +252,12 @@ describe('write', function() {
 
         it('should not write a source map', function(done) {
             completeWithResources(result, function() {
-                var writtenMapData = readFile('test/sandbox/dist-nomapcontent/src/withMap.js.map');
+                var writtenMapData = readFile('test/sandbox/dist-nomapcontent/test/src/withMap.js.map');
                 var sourceMap = SourceMap.fromMapData(writtenMapData.toString());
                 sourceMap.version.should.equal(3);
                 sourceMap.file.should.equal('withMap.js');
                 // paths relative to output dir
-                sourceMap.sources.should.deep.equal(['../../../src/withMap.js']);
+                sourceMap.sources.should.deep.equal(['../../../../src/withMap.js']);
                 should.not.exist(sourceMap.sourcesContent);
                 sourceMap.mappings.should.deep.equal(withMapMap.mappings);
                 sourceMap.names.should.deep.equal(withMapMap.names);
