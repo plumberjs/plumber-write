@@ -84,7 +84,7 @@ function writeConfig(omitSourceMap, omitMapContent) {
                 var x = resource.path().absolute().replace(/^.*?\//, '');
                 var destFile = new Path({
                     dirname: path.join(destPath.dirname(), path.dirname(x)),
-                    filename: path.basename(x)
+                    filename: resource.filename()
                 });
 
                 if (omitSourceMap) {
