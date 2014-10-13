@@ -28,6 +28,21 @@ function defineGet(obj, method, func) {
 }
 
 
+function when(cond, op) {
+    return function(resource) {
+        if (cond(resource)) {
+            return op(resource);
+        } else {
+            return resource;
+        }
+    };
+}
+
+function isNotReport(resourceOrReport) {
+    return typeof resourceOrReport.type !== 'string';
+}
+
+
 function dataWithSourceMapping(resource) {
     var suffix;
     if (! resource.sourceMap()) {
@@ -77,7 +92,7 @@ function writeConfig(omitSourceMap, omitMapContent) {
                 return q.reject(new Error('Cannot write multiple resources to a single file: ' + destPath.absolute()));
             }
 
-            return q.all(resources.map(function(resource) {
+            return q.all(resources.map(when(isNotReport, function(resource) {
                 var destFile;
                 if (destPath.isDirectory()) {
                     destFile = destPath.withFilename(resource.filename());
@@ -102,7 +117,7 @@ function writeConfig(omitSourceMap, omitMapContent) {
                         writeSourceMap(resource, destFile)
                     ]);
                 });
-            })).then(flatten);
+            }))).then(flatten);
         };
 
 
